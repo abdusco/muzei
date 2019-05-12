@@ -421,7 +421,7 @@ class MuzeiBlurRenderer(
 
             // At most pan across 1.8 screenfuls (2 screenfuls + some parallax)
             // TODO: if we know the number of home screen pages, use that number here
-            val maxPanScreenWidths = Math.min(1.8f, scaledBitmapToScreenAspectRatio)
+            val maxPanScreenWidths = scaledBitmapToScreenAspectRatio
 
             currentViewport.apply {
                 left = interpolate(-1f, 1f,

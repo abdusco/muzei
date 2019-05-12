@@ -74,7 +74,7 @@ object WallpaperSizeLiveData : MutableLiveData<WallpaperSize>()
 class MuzeiWallpaperService : GLWallpaperService(), LifecycleOwner {
 
     companion object {
-        private const val TEMPORARY_FOCUS_DURATION_MILLIS: Long = 3000
+        private const val TEMPORARY_FOCUS_DURATION_MILLIS: Long = 30000
         private const val THREE_FINGER_TAP_INTERVAL_MS = 1000L
         private const val MAX_ARTWORK_SIZE = 110 // px
     }
