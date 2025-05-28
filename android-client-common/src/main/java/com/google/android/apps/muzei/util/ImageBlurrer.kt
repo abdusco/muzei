@@ -58,7 +58,7 @@ class ImageBlurrer(context: Context, private val sourceBitmap: Bitmap?) {
             return null
         }
 
-        val dest = sourceBitmap.copy(sourceBitmap.config, true)
+        val dest = sourceBitmap.copy(sourceBitmap.config!!, true)
         if (radius == 0f && desaturateAmount == 0f) {
             return dest
         }

@@ -43,7 +43,6 @@ android {
         versionCode versionProps['code'].toInteger()
 
         multiDexEnabled true
-        wearAppUnbundled true
 
         buildConfigField "String", "DEVICE_TYPE", "\"android\""
     }
