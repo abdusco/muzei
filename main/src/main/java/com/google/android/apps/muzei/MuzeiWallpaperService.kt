@@ -78,8 +78,8 @@ val WallpaperSizeStateFlow = MutableStateFlow<WallpaperSize?>(null)
 class MuzeiWallpaperService : GLWallpaperService(), LifecycleOwner {
 
     companion object {
-        private const val TEMPORARY_FOCUS_DURATION_MILLIS: Long = 3000
-        private const val THREE_FINGER_TAP_INTERVAL_MS = 1000L
+        private const val TEMPORARY_FOCUS_DURATION_MILLIS: Long = 30000
+        private const val THREE_FINGER_TAP_INTERVAL_MS = 500L
         private const val MAX_ARTWORK_SIZE = 110 // px
     }
 
@@ -274,6 +274,8 @@ class MuzeiWallpaperService : GLWallpaperService(), LifecycleOwner {
         fun lockScreenVisibleChanged(isLockScreenVisible: Boolean) {
             if (!EffectsLockScreenOpen.value) {
                 renderController.onLockScreen = isLockScreenVisible
+                renderer.setIsBlurred(isBlurred = true, artDetailMode = false)
+
             }
         }
 

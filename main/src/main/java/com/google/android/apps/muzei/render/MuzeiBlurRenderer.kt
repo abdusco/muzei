@@ -66,8 +66,8 @@ class MuzeiBlurRenderer(
     companion object {
         private const val TAG = "MuzeiBlurRenderer"
 
-        private const val CROSSFADE_ANIMATION_DURATION = 750
-        private const val BLUR_ANIMATION_DURATION = 750
+        private const val CROSSFADE_ANIMATION_DURATION = 1000
+        private const val BLUR_ANIMATION_DURATION = 500
 
         const val DEFAULT_BLUR = 250 // max 500
         const val DEFAULT_GREY = 0 // max 500
@@ -117,7 +117,7 @@ class MuzeiBlurRenderer(
 
     init {
         val activityManager = context.getSystemService(Context.ACTIVITY_SERVICE) as ActivityManager
-        blurKeyframes = if (activityManager.isLowRamDevice) 1 else 2
+        blurKeyframes = if (activityManager.isLowRamDevice) 1 else 3
         blurAnimator.currentValue = blurKeyframes.toFloat()
 
         currentGLPictureSet = GLPictureSet(0)
@@ -139,7 +139,7 @@ class MuzeiBlurRenderer(
         else
             Prefs.getSharedPreferences(context)
                     .getInt(blurPreferenceName, DEFAULT_BLUR)
-        val maxBlurRadiusOverScreenHeight = blurAmount * 0.0001f
+        val maxBlurRadiusOverScreenHeight = blurAmount * 0.0004f
         val dm = context.resources.displayMetrics
         val maxBlurPx = (dm.heightPixels * maxBlurRadiusOverScreenHeight).toInt()
         blurredSampleSize = 4
