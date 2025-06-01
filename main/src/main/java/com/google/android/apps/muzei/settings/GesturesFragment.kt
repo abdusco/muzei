@@ -19,7 +19,6 @@ package com.google.android.apps.muzei.settings
 import android.os.Bundle
 import android.view.View
 import androidx.appcompat.graphics.drawable.DrawerArrowDrawable
-import androidx.core.content.edit
 import androidx.fragment.app.Fragment
 import androidx.navigation.fragment.findNavController
 import net.nurik.roman.muzei.R
@@ -41,24 +40,22 @@ class GesturesFragment: Fragment(R.layout.gestures_fragment) {
         }
 
         val prefs = Prefs.getSharedPreferences(requireContext())
-        val doubleTapValue = prefs.getString(Prefs.PREF_DOUBLE_TAP,
+        val tripleTapValue = prefs.getString(Prefs.PREF_TRIPLE_TAP,
                 Prefs.PREF_TAP_ACTION_TEMP)
-        binding.doubleTapAction.check(when (doubleTapValue) {
-            Prefs.PREF_TAP_ACTION_TEMP -> R.id.double_tap_temporary_disable
-            Prefs.PREF_TAP_ACTION_NEXT -> R.id.double_tap_next
-            Prefs.PREF_TAP_ACTION_VIEW_DETAILS -> R.id.double_tap_view_details
-            else -> R.id.double_tap_none
+        binding.tripleTapAction.check(when (tripleTapValue) {
+            Prefs.PREF_TAP_ACTION_TEMP -> R.id.triple_tap_temporary_disable
+            Prefs.PREF_TAP_ACTION_NEXT -> R.id.triple_tap_next
+            Prefs.PREF_TAP_ACTION_VIEW_DETAILS -> R.id.triple_tap_view_details
+            else -> R.id.triple_tap_none
         })
-        binding.doubleTapAction.setOnCheckedChangeListener { _, index ->
+        binding.tripleTapAction.setOnCheckedChangeListener { _, index ->
             val newValue = when(index) {
-                R.id.double_tap_temporary_disable -> Prefs.PREF_TAP_ACTION_TEMP
-                R.id.double_tap_next -> Prefs.PREF_TAP_ACTION_NEXT
-                R.id.double_tap_view_details -> Prefs.PREF_TAP_ACTION_VIEW_DETAILS
+                R.id.triple_tap_temporary_disable -> Prefs.PREF_TAP_ACTION_TEMP
+                R.id.triple_tap_next -> Prefs.PREF_TAP_ACTION_NEXT
+                R.id.triple_tap_view_details -> Prefs.PREF_TAP_ACTION_VIEW_DETAILS
                 else -> Prefs.PREF_TAP_ACTION_NONE
             }
-            prefs.edit {
-                putString(Prefs.PREF_DOUBLE_TAP, newValue)
-            }
+            prefs.edit().putString(Prefs.PREF_TRIPLE_TAP, newValue).apply()
         }
 
         val threeFingerTapValue = prefs.getString(Prefs.PREF_THREE_FINGER_TAP,
@@ -76,9 +73,7 @@ class GesturesFragment: Fragment(R.layout.gestures_fragment) {
                 R.id.three_finger_tap_view_details -> Prefs.PREF_TAP_ACTION_VIEW_DETAILS
                 else -> Prefs.PREF_TAP_ACTION_NONE
             }
-            prefs.edit {
-                putString(Prefs.PREF_THREE_FINGER_TAP, newValue)
-            }
+            prefs.edit().putString(Prefs.PREF_THREE_FINGER_TAP, newValue).apply()
         }
     }
 }

@@ -150,36 +150,87 @@ class MuzeiWallpaperService : GLWallpaperService(), LifecycleOwner {
         private lateinit var renderController: RenderController
         private var currentArtworkColors: WallpaperColors? = null
 
-        private var validDoubleTap: Boolean = false
+        private var validTripleTap: Boolean = false
         private var lastThreeFingerTap = 0L
 
         private val engineLifecycle = LifecycleRegistry(this)
 
-        private var doubleTapTimeout: Job? = null
+        private var tripleTapTimeout: Job? = null
 
         private val gestureListener = object : GestureDetector.SimpleOnGestureListener() {
+            private var tapCount = 0
+            private var lastTapTime: Long = 0
+            private val TAP_TIMEOUT_MS = ViewConfiguration.getDoubleTapTimeout().toLong()
+            // Timeout for how long validTripleTap stays true
+            private val VALID_TRIPLE_TAP_ACTION_TIMEOUT_MS = ViewConfiguration.getDoubleTapTimeout().toLong() * 2 // Or another suitable value
+
             override fun onDown(e: MotionEvent): Boolean {
+                val currentTime = SystemClock.uptimeMillis()
+                if (tapCount > 0 && (currentTime - lastTapTime) > TAP_TIMEOUT_MS) {
+                    // Timeout exceeded, reset tap count
+                    tapCount = 0
+                }
+
+                tapCount++
+                lastTapTime = currentTime
+
+                if (tapCount == 3) {
+                    if (!ArtDetailOpen.value) {
+                        validTripleTap = true // Processed in onCommand/COMMAND_TAP
+                        tripleTapTimeout?.cancel()
+                        tripleTapTimeout = lifecycleScope.launch {
+                            delay(VALID_TRIPLE_TAP_ACTION_TIMEOUT_MS)
+                            queueEvent {
+                                validTripleTap = false
+                            }
+                        }
+                    }
+                    tapCount = 0 // Reset for next sequence
+                    // Consume the event as part of the triple tap
+                    return true
+                }
+                // If not a triple tap yet, ensure other gestures can still be processed
+                // by the detector if needed, but for onDown, we usually return true.
+                // However, to ensure double tap (which we are now ignoring for our logic but
+                // GestureDetector might still use for its internal state if not made a no-op)
+                // and other gestures are correctly processed by the base detector if we don't consume it here,
+                // consider the implications. For now, returning true as we are directly handling taps.
                 return true
             }
 
             override fun onDoubleTap(e: MotionEvent): Boolean {
-                if (ArtDetailOpen.value) {
-                    // The main activity is visible, so discard any double touches since focus
-                    // should be forced on
-                    return true
-                }
+                // No-op. We are handling tap counting in onDown.
+                // Return true to indicate it's handled to prevent other actions if necessary.
+                return true
+            }
 
-                validDoubleTap = true // processed in onCommand/COMMAND_TAP
-
-                doubleTapTimeout?.cancel()
-                val timeout = ViewConfiguration.getDoubleTapTimeout().toLong()
-                doubleTapTimeout = lifecycleScope.launch {
-                    delay(timeout)
-                    queueEvent {
-                        validDoubleTap = false
-                    }
+            override fun onDoubleTapEvent(e: MotionEvent): Boolean {
+                // No-op for the same reason as onDoubleTap.
+                // Return true to prevent interference with our onDown-based tap counting.
+                if (e.action == MotionEvent.ACTION_UP && tapCount < 2) {
+                    // If it was a genuine double tap that didn't become a triple, reset count.
+                    // This helps if the user actually double taps and stops.
+                    tapCount = 0
                 }
                 return true
+            }
+
+            override fun onScroll(e1: MotionEvent?, e2: MotionEvent, distanceX: Float, distanceY: Float): Boolean {
+                tapCount = 0 // Reset on scroll
+                lastTapTime = 0
+                return super.onScroll(e1, e2, distanceX, distanceY)
+            }
+
+            override fun onFling(e1: MotionEvent?, e2: MotionEvent, velocityX: Float, velocityY: Float): Boolean {
+                tapCount = 0 // Reset on fling
+                lastTapTime = 0
+                return super.onFling(e1, e2, velocityX, velocityY)
+            }
+
+            override fun onLongPress(e: MotionEvent) {
+                tapCount = 0 // Reset on long press
+                lastTapTime = 0
+                super.onLongPress(e)
             }
         }
         private val gestureDetector: GestureDetector = GestureDetector(this@MuzeiWallpaperService,
@@ -309,14 +360,14 @@ class MuzeiWallpaperService : GLWallpaperService(), LifecycleOwner {
                 extras: Bundle?,
                 resultRequested: Boolean
         ): Bundle? {
-            // validDoubleTap previously set in the gesture listener
-            if (WallpaperManager.COMMAND_TAP == action && validDoubleTap) {
+            // validTripleTap previously set in the gesture listener
+            if (WallpaperManager.COMMAND_TAP == action && validTripleTap) {
                 val prefs = Prefs.getSharedPreferences(this@MuzeiWallpaperService)
-                val doubleTapValue = prefs.getString(Prefs.PREF_DOUBLE_TAP,
+                val tripleTapValue = prefs.getString(Prefs.PREF_TRIPLE_TAP,
                         null) ?: Prefs.PREF_TAP_ACTION_TEMP
-                triggerTapAction(doubleTapValue, "gesture_double_tap")
+                triggerTapAction(tripleTapValue, "gesture_triple_tap")
                 // Reset the flag
-                validDoubleTap = false
+                validTripleTap = false
             }
             return super.onCommand(action, x, y, z, extras, resultRequested)
         }
@@ -409,3 +460,4 @@ class MuzeiWallpaperService : GLWallpaperService(), LifecycleOwner {
         }
     }
 }
+
