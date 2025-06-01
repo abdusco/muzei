@@ -67,7 +67,7 @@ class MuzeiBlurRenderer(
         private const val TAG = "MuzeiBlurRenderer"
 
         private const val CROSSFADE_ANIMATION_DURATION = 1000
-        private const val BLUR_ANIMATION_DURATION = 500
+        private const val BLUR_ANIMATION_DURATION = 1000
 
         const val DEFAULT_BLUR = 250 // max 500
         const val DEFAULT_GREY = 0 // max 500
